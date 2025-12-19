@@ -1,0 +1,44 @@
+name: Deploy to somee.com via FTP
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Nếu bạn có bước build (vd: npm run build), thêm vào đây.
+      # - name: Install & Build
+      #   run: |
+      #     npm ci
+      #     npm run build
+
+      - name: FTP Deploy to somee.com
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOST }}
+          username: ${{ secrets.U }}
+          password: ${{ secrets.PW }}
+
+          # Thư mục local cần upload:
+          # - Nếu web tĩnh: "./" (root repo) hoặc "./dist" nếu bạn build ra dist
+          local-dir: ./
+
+          # Thư mục trên hosting (remote):
+          # Thường somee sẽ có /wwwroot hoặc /site/wwwroot (tùy cấu hình)
+          server-dir: /wwwroot/
+
+          # Một số FTP host cần passive mode; action mặc định xử lý tốt,
+          # nhưng nếu bạn gặp lỗi kết nối, bạn có thể thử bật "dangerous-clean-slate" hoặc chỉnh exclude.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.github/**
+            **/*.md
